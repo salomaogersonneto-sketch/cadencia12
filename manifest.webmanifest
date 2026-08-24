@@ -1,0 +1,17 @@
+{
+  "name": "Cadência 12",
+  "short_name": "Cadência",
+  "description": "Programa de 12 semanas de bike indoor com aula guiada, ofensiva diária e evolução de VO2.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080B11",
+  "theme_color": "#080B11",
+  "lang": "pt-BR",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
