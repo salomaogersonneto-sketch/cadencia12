@@ -123,8 +123,10 @@ details.week>summary::-webkit-details-marker{display:none}
 .dayrow .nm{flex:1;min-width:0}
 .dayrow .nm b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dayrow .nm i{font-style:normal;font-size:11.5px;color:var(--muted)}
-.tick{width:20px;height:20px;border-radius:99px;border:2px solid var(--line);flex:none}
+.tick{width:30px;height:30px;border-radius:99px;border:2px solid var(--line);flex:none;background:transparent;padding:0;position:relative}
+.tick::after{content:"";position:absolute;left:9px;top:7px;width:7px;height:12px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(42deg);opacity:.35}
 .tick.on{background:var(--good);border-color:var(--good)}
+.tick.on::after{border-color:#04150E;opacity:1}
 
 /* ---------- bottom nav ---------- */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -140,8 +142,21 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 #player .phead{position:relative;display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
 #player .pbody{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px 20px;gap:6px;overflow:hidden}
 .ptag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:99px;color:var(--badge-ink)}
-.ptime{font-family:"IBM Plex Mono";font-size:clamp(64px,22vw,120px);font-weight:600;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
-.pcue{font-family:Archivo;font-weight:900;font-stretch:110%;text-transform:uppercase;font-size:clamp(20px,6vw,30px);line-height:1.05}
+.ptime{font-family:"IBM Plex Mono";font-size:clamp(60px,20vw,112px);font-weight:600;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.pblockbar{width:min(320px,72vw);height:5px;border-radius:99px;background:var(--surface2);overflow:hidden;margin:2px 0 8px}
+.pblockbar i{display:block;height:100%;background:currentColor;transition:width .2s linear}
+.pcue{font-family:Archivo;font-weight:900;font-stretch:110%;text-transform:uppercase;font-size:clamp(19px,5.4vw,28px);line-height:1.05}
+.pmot{font-size:14.5px;color:var(--muted);max-width:34ch;min-height:2.6em;line-height:1.35;transition:opacity .35s ease}
+.pprog{height:3px;background:var(--surface2);position:relative;z-index:2}
+.pprog i{display:block;height:100%;background:var(--accent);width:0}
+.prep{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:20px;background:var(--bg)}
+.prep::before{content:"";position:absolute;inset:0;background:radial-gradient(65% 45% at 50% 45%,currentColor 0%,transparent 72%);opacity:.22;pointer-events:none}
+.prep>*{position:relative}
+.prep.on{display:flex}
+.prepnum{font-family:"IBM Plex Mono";font-size:clamp(64px,24vw,128px);font-weight:600;line-height:1;color:currentColor}
+.prepinstr{font-family:Archivo,"Arial Narrow",system-ui,sans-serif;font-weight:900;font-stretch:118%;text-transform:uppercase;font-size:clamp(24px,7.2vw,40px);line-height:1.02;letter-spacing:.01em;color:var(--text);max-width:16ch}
+.prepdet{font-family:"IBM Plex Mono";font-size:15px;color:var(--muted);margin-top:6px}
+.preplabel{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .ptargets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:420px;margin-top:8px}
 .ptargets div{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 6px}
 .ptargets b{display:block;font-family:"IBM Plex Mono";font-size:19px;font-weight:600}
@@ -214,21 +229,30 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:18px 0}
 
 <section id="player">
   <div class="pglow"></div>
+  <div class="pprog"><i id="pProg"></i></div>
   <div class="phead">
     <strong id="pName" style="font-size:14px">—</strong>
     <div class="spacer"></div>
-    <span class="mono small muted" id="pTotal">00:00</span>
+    <span class="mono small muted"><span id="pElapsed">00:00</span> / <span id="pDur">00:00</span></span>
   </div>
   <div class="pbody">
     <span class="ptag" id="pTag">AQUECIMENTO</span>
     <div class="ptime" id="pTime">00:00</div>
+    <div class="pblockbar"><i id="pBlockBar" style="width:0"></i></div>
     <div class="pcue" id="pCue">—</div>
+    <div class="pmot" id="pMot"></div>
     <div class="ptargets">
       <div><b id="pRpm">—</b><span>RPM</span></div>
       <div><b id="pRes">—</b><span>Resistência</span></div>
       <div><b id="pZone">—</b><span>Zona FC</span></div>
     </div>
     <div class="pnext" id="pNext"></div>
+    <div class="prep" id="pPrep">
+      <span class="preplabel">Prepara</span>
+      <div class="prepnum" id="pPrepNum">10</div>
+      <div class="prepinstr" id="pPrepInstr">ACELERA</div>
+      <div class="prepdet" id="pPrepDet"></div>
+    </div>
   </div>
   <div class="prail" id="pRail"></div>
   <div class="pfoot">
@@ -345,6 +369,20 @@ const W = {
     b.push(...cool(600));
     return {key:"long",nome:"Longo com Surtos",sub:`${min} min · ${n-1} surtos`,foco:"Resistência e economia de pedalada",blocos:b};
   },
+  baseCad:(min)=>{
+    const b=[B(180,1,"85–90","R2","Sentado plano","Entra fácil, acorda a perna","Aquecimento"),
+             B(300,2,"90","R3","Sentado plano","Encontra o ritmo","Aquecimento")];
+    let rest=min*60-480-300, i=0;
+    const pat=[
+      [2,"100–108","R3","Sentado plano","Giro alto — quadril parado no selim","Cadência"],
+      [2,"60–68","R6","Sentado subida","Torque baixo — empurra devagar e forte","Força"],
+      [3,"88–94","R5","Sentado plano","Tempo — ritmo firme, respiração controlada","Tempo"]
+    ];
+    while(rest>0){ const d=Math.min(360,rest); const p=pat[i%3];
+      b.push(B(d,p[0],p[1],p[2],p[3],p[4],p[5])); rest-=d; i++; }
+    b.push(...cool(300));
+    return {key:"basecad",nome:"Base Cadência",sub:`${min} min · giro alto e torque baixo`,foco:"Base aeróbica com eficiência de pedalada",blocos:b};
+  },
   rec:(min)=>({key:"rec",nome:"Recuperação Ativa",sub:`${min} min em Z1`,foco:"Fluxo sanguíneo e recuperação",blocos:[
     B(300,1,"85–90","R2","Sentado plano","Bem leve, só girar","Aquecimento"),
     B((min-10)*60,1,"88–95","R3","Sentado plano","Respiração só pelo nariz o tempo todo","Base"),
@@ -364,20 +402,53 @@ const W = {
 
 const DIAS = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 const PLANO = [
-  {b:1,dl:0,d:[W.vo2(4,4,3), W.z2(45), W.ss(3,6),  W.rec(30), W.hiit(3,5), W.long(50), W.ativa()]},
-  {b:1,dl:0,d:[W.vo2(4,4,3), W.z2(50), W.ss(3,8),  W.rec(30), W.hiit(3,6), W.long(55), W.ativa()]},
-  {b:1,dl:0,d:[W.vo2(5,4,3), W.z2(50), W.ss(3,10), W.rec(30), W.hiit(3,8), W.long(60), W.ativa()]},
-  {b:1,dl:1,d:[W.vo2(3,4,3), W.z2(40), W.teste(),  W.rec(30), W.hiit(3,5), W.long(45), W.ativa()]},
-  {b:2,dl:0,d:[W.vo2(5,4,3), W.z2(50), W.thr(2,18),W.rec(30), W.hiit(3,7), W.long(60), W.ativa()]},
-  {b:2,dl:0,d:[W.t3015(3,11),W.z2(50), W.ss(3,10), W.rec(30), W.hiit(3,8), W.long(60), W.ativa()]},
-  {b:2,dl:0,d:[W.vo2(6,4,3), W.z2(55), W.thr(2,18),W.rec(30), W.hiit(4,6), W.long(60), W.ativa()]},
-  {b:2,dl:1,d:[W.vo2(3,4,3), W.z2(40), W.teste(),  W.rec(30), W.hiit(3,5), W.long(45), W.ativa()]},
-  {b:3,dl:0,d:[W.t3015(3,13),W.z2(50), W.ss(3,12), W.rec(30), W.hiit(3,8), W.long(60), W.ativa()]},
-  {b:3,dl:0,d:[W.vo2(5,5,3), W.z2(55), W.thr(2,18),W.rec(30), W.hiit(4,7), W.long(60), W.ativa()]},
-  {b:3,dl:0,d:[W.vo2(6,4,3), W.z2(50), W.ss(3,12), W.rec(30), W.hiit(4,8), W.long(60), W.ativa()]},
-  {b:3,dl:1,d:[W.vo2(3,4,3), W.z2(40), W.teste(),  W.rec(30), W.hiit(3,5), W.long(45), W.ativa()]}
+  {b:1,dl:0,d:[W.vo2(4,4,3), W.z2(45), W.ss(3,6),  W.baseCad(45), W.hiit(3,5), W.long(50), W.ativa()]},
+  {b:1,dl:0,d:[W.vo2(4,4,3), W.z2(50), W.ss(3,8),  W.baseCad(50), W.hiit(3,6), W.long(55), W.ativa()]},
+  {b:1,dl:0,d:[W.vo2(5,4,3), W.z2(50), W.ss(3,10), W.baseCad(50), W.hiit(3,8), W.long(60), W.ativa()]},
+  {b:1,dl:1,d:[W.vo2(3,4,3), W.z2(40), W.teste(),  W.baseCad(40), W.hiit(3,5), W.long(45), W.ativa()]},
+  {b:2,dl:0,d:[W.vo2(5,4,3), W.z2(50), W.thr(2,18),W.baseCad(50), W.hiit(3,7), W.long(60), W.ativa()]},
+  {b:2,dl:0,d:[W.t3015(3,11),W.z2(50), W.ss(3,10), W.baseCad(50), W.hiit(3,8), W.long(60), W.ativa()]},
+  {b:2,dl:0,d:[W.vo2(6,4,3), W.z2(55), W.thr(2,18),W.baseCad(55), W.hiit(4,6), W.long(60), W.ativa()]},
+  {b:2,dl:1,d:[W.vo2(3,4,3), W.z2(40), W.teste(),  W.baseCad(40), W.hiit(3,5), W.long(45), W.ativa()]},
+  {b:3,dl:0,d:[W.t3015(3,13),W.z2(50), W.ss(3,12), W.baseCad(50), W.hiit(3,8), W.long(60), W.ativa()]},
+  {b:3,dl:0,d:[W.vo2(5,5,3), W.z2(55), W.thr(2,18),W.baseCad(55), W.hiit(4,7), W.long(60), W.ativa()]},
+  {b:3,dl:0,d:[W.vo2(6,4,3), W.z2(50), W.ss(3,12), W.baseCad(50), W.hiit(4,8), W.long(60), W.ativa()]},
+  {b:3,dl:1,d:[W.vo2(3,4,3), W.z2(40), W.teste(),  W.baseCad(40), W.hiit(3,5), W.long(45), W.ativa()]}
 ];
 const BLOCONOME = {1:"Bloco 1 · Base + VO₂",2:"Bloco 2 · Limiar + VO₂",3:"Bloco 3 · Pico"};
+
+/* ---- frases do treinador ---- */
+const FRASES = {
+  Tiro:["Aguenta. É aqui que o VO₂ sobe.","Respiração feia agora é sinal de que está certo.","Não olha o relógio, olha a cadência.","Cabeça parada, ombro solto, perna girando.","Ninguém morreu de tiro de 4 minutos.","Esse minuto separa quem melhora de quem mantém.","Segura o RPM. A carga já está paga.","Dor de perna passa. O número no gráfico fica.","Último terço. Aperta.","Você aguenta mais do que a sua cabeça diz."],
+  Sprint:["Explode. É curto.","Gira rápido, não trava o quadril.","Máximo agora, o alívio já vem.","Não poupa. O intervalo é o prêmio.","Mais rápido. Mais rápido.","Perna solta, giro alto."],
+  Escalada:["Pressão constante. Não é sprint, é prensa.","Empurra com o calcanhar, puxa com o quadril.","Tronco quieto. Só a perna trabalha.","Esse é o ritmo que levanta o seu limiar.","Respira em três tempos. Controla.","Se dá pra conversar, está leve demais.","Não deixa a cadência cair."],
+  Limiar:["Ritmo de prova. Nem mais, nem menos.","Desconfortável e sustentável. É esse o ponto.","Segura o número. Falta menos do que parece.","Mandíbula solta, mão leve no guidão."],
+  Surto:["Levanta. Um minuto em pé.","Peso no pedal, não no guidão.","Sobe o ritmo e volta pro selim inteiro."],
+  Base:["É esse treino que constrói a base. Sem pressa.","Consegue falar? Então está no ritmo certo.","Ritmo de estrada. Ombros soltos.","Bebe água.","Cotovelo mole, mão leve no guidão.","Aqui é onde a gordura vira combustível.","Cadência limpa, quadril parado no selim.","Nada de acelerar. Hoje é volume.","Respira pelo nariz enquanto der."],
+  Cadência:["Giro alto sem quicar no selim.","Pé redondo: empurra e puxa.","Se o quadril balança, baixa o giro.","Perna solta, tornozelo firme."],
+  Força:["Devagar e forte. Carga alta, giro baixo.","Isso aqui é agachamento na bike.","Empurra com o glúteo, não só com a coxa.","Sem trancar a respiração."],
+  Tempo:["Ritmo firme. Respiração controlada.","Segura aqui, ainda dá.","Constante é melhor que rápido."],
+  Aquecimento:["Sem pressa. Acorda a perna.","Ajusta selim e guidão agora, não no meio do treino.","Respiração nasal enquanto der.","Vai apertar. Aproveita a calma."],
+  Recuperação:["Solta tudo. É pra recuperar mesmo.","Respira fundo e baixa a frequência.","Sem carga. Só girar.","Bebe água."],
+  Calma:["Acabou a parte dura. Só rodar.","Respiração longa. Deixa a FC cair.","Registra a sessão no final."],
+  Teste:["Mesma resistência de sempre. RPM máximo que aguenta 12 minutos.","Não sai voando. Forte e constante.","Metade. Segura o número.","Últimos dois minutos. Tira tudo."],
+  Mobilidade:["Fora da bike. Cinco minutos que valem por trinta.","Respira e segura a posição.","Sem forçar. Amplitude, não dor."],
+  Bloco:["Segue firme.","Ritmo constante."]
+};
+const num1 = s => { const m=String(s).match(/\d+/); return m?Number(m[0]):null; };
+function instrucaoTransicao(a,b){
+  if(!a||!b) return "";
+  const ra=num1(a.rpm), rb=num1(b.rpm), ca=num1(a.res), cb=num1(b.res);
+  if(a.z<=1 && b.z<=1) return b.tag==="Calma" ? "VOLTA À CALMA" : "SEGUE LEVE";
+  if(b.z<=a.z-2) return b.tag==="Calma" ? "SOLTA — VOLTA À CALMA" : "SOLTA — RECUPERA";
+  if(b.z>=5 && a.z<=2) return "VAI — CARGA E RITMO MÁXIMO";
+  const p=[];
+  if(ra!=null && rb!=null){ if(rb-ra>=5) p.push("ACELERA"); else if(ra-rb>=5) p.push("REDUZ O GIRO"); }
+  if(ca!=null && cb!=null){ if(cb>ca) p.push("AUMENTA A CARGA"); else if(cb<ca) p.push("ALIVIA A CARGA"); }
+  if(!p.length) p.push(b.z>=4?"SEGURA O RITMO":"MANTÉM");
+  if(b.pos && a.pos!==b.pos && /pé/i.test(b.pos)) p.push("EM PÉ");
+  return p.join(" + ");
+}
 
 const secOf   = s => s.blocos.reduce((a,b)=>a+b.s,0);
 const minOf   = s => Math.round(secOf(s)/60);
@@ -389,8 +460,11 @@ const KEY="cadencia12";
 const DEF = {
   v:1,
   perfil:{nome:"Gerson", peso:102, idade:null, fcMax:null, fcRep:null, inicio:"2026-08-24"},
-  feitos:{}, testes:[], xp:0, ofensiva:0, recorde:0, ultimo:null, escudos:0, medalhas:[], updatedAt:0
+  feitos:{}, testes:[], trocas:{}, xp:0, ofensiva:0, recorde:0, ultimo:null, escudos:0, medalhas:[],
+  opts:{voz:true, frases:true, bipe:true}, updatedAt:0
 };
+const RECUP30 = W.rec(30);
+function sessaoAtiva(sem,dia,ds){ return (ds && S.trocas && S.trocas[ds]) ? RECUP30 : sessaoDe(sem,dia); }
 let S = JSON.parse(JSON.stringify(DEF));
 let aba="hoje", ns=undefined, saveT=null;
 
@@ -477,42 +551,74 @@ async function carregar(){
   try{ localS=JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){}
   const cand=[nuvemS,localS].filter(Boolean).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
   if(cand[0]) S = Object.assign(JSON.parse(JSON.stringify(DEF)), cand[0],
-      {perfil:Object.assign({},DEF.perfil,cand[0].perfil||{})});
+      {perfil:Object.assign({},DEF.perfil,cand[0].perfil||{}),
+       opts:Object.assign({},DEF.opts,cand[0].opts||{}),
+       trocas:cand[0].trocas||{}});
 }
 
 /* ================= CONCLUIR SESSÃO ================= */
+// A ofensiva é sempre derivada das datas registradas, para que marcar um dia
+// atrasado recoloque a sequência no lugar em vez de somar em cima do estado antigo.
+function calcOfensiva(){
+  const ds = Object.keys(S.feitos).sort();
+  const runs = {};
+  let run=0, best=0, esc=0;
+  ds.forEach((d,i)=>{
+    if(i===0) run=1;
+    else{
+      const gap = diffDias(ds[i-1], d);
+      if(gap===1) run++;
+      else if(gap===2 && esc>0){ esc--; run++; }
+      else run=1;
+    }
+    if(run%14===0 && esc<2) esc++;
+    if(run>best) best=run;
+    runs[d]=run;
+  });
+  const ultimo = ds.length ? ds[ds.length-1] : null;
+  const atual = ultimo && diffDias(ultimo, hoje())<=1 ? run : 0;
+  return {runs, best, esc, ultimo, atual};
+}
+function recalcTudo(){
+  const r = calcOfensiva();
+  S.recorde=r.best; S.escudos=r.esc; S.ultimo=r.ultimo; S.ofensiva=r.atual;
+  let total=0;
+  Object.keys(S.feitos).sort().forEach(d=>{
+    const f=S.feitos[d];
+    const noDia = d===dataDe(f.sem,f.dia);
+    f.xp = Math.round((f.min||0) + (f.hard||0)*2 + (noDia?25:0) + Math.min((r.runs[d]||1)*3,60));
+    total += f.xp;
+  });
+  S.xp = total;
+  MEDALHAS.forEach(m=>{ if(!S.medalhas.includes(m.id) && m.ok(S)) S.medalhas.push(m.id); });
+}
 function concluir(dateStr, sem, dia, extra){
-  const s = sessaoDe(sem,dia);
+  const s = sessaoAtiva(sem,dia,dateStr);
   const min = minOf(s), kcal = kcalOf(s, S.perfil.peso||102);
-  const noDia = dateStr===dataDe(sem,dia);
-
-  // ofensiva
-  if(S.ultimo!==dateStr){
-    const gap = S.ultimo ? diffDias(S.ultimo, dateStr) : 1;
-    if(gap===1) S.ofensiva++;
-    else if(gap===2 && S.escudos>0){ S.escudos--; S.ofensiva++; }
-    else S.ofensiva=1;
-    S.ultimo=dateStr;
-    if(S.ofensiva>S.recorde) S.recorde=S.ofensiva;
-    if(S.ofensiva%14===0 && S.escudos<2) S.escudos++;
-  }
-  const xp = Math.round(min + hardMin(s)*2 + (noDia?25:0) + Math.min(S.ofensiva*3,60));
-  S.xp += xp;
-  S.feitos[dateStr] = {sem, dia, key:s.key, nome:s.nome, min, kcal, xp,
+  S.feitos[dateStr] = {sem, dia, key:s.key, nome:s.nome, min, kcal, hard:Math.round(hardMin(s)), xp:0,
     rpe:extra.rpe||null, fcMed:extra.fcMed||null, fcMax:extra.fcMax||null, obs:extra.obs||""};
 
-  if(s.key==="teste" && (extra.rpm||extra.fcRep)){
+  if(s.key==="teste" && (extra.rpm||extra.fcRep||extra.hrr60)){
     const fRep = Number(extra.fcRep)||S.perfil.fcRep;
     const fMax = Number(extra.fcMax)||fcMax();
     if(fRep) S.perfil.fcRep=fRep;
     if(Number(extra.fcMax)) S.perfil.fcMax=Number(extra.fcMax);
+    S.testes = S.testes.filter(t=>t.data!==dateStr);
     S.testes.push({data:dateStr, semana:sem, fcRep:fRep||null, fcMax:fMax||null,
       rpm:Number(extra.rpm)||null, hrr60:Number(extra.hrr60)||null, vo2:vo2est(fMax,fRep)});
+    S.testes.sort((a,b)=>a.data.localeCompare(b.data));
   }
-  const novas=[];
-  MEDALHAS.forEach(m=>{ if(!S.medalhas.includes(m.id) && m.ok(S)){ S.medalhas.push(m.id); novas.push(m); } });
+  const antes = S.medalhas.slice();
+  recalcTudo();
+  const novas = MEDALHAS.filter(m=>S.medalhas.includes(m.id) && antes.indexOf(m.id)<0);
   salvar();
-  return {xp, min, kcal, novas, nome:s.nome};
+  return {xp:S.feitos[dateStr].xp, min, kcal, novas, nome:s.nome, data:dateStr};
+}
+function desfazer(dateStr){
+  if(!S.feitos[dateStr]) return;
+  delete S.feitos[dateStr];
+  S.testes = S.testes.filter(t=>t.data!==dateStr);
+  recalcTudo(); salvar();
 }
 
 /* ================= UI ================= */
@@ -538,7 +644,7 @@ function render(){
 
 /* ---- HOJE ---- */
 function viewHoje(v){
-  const d=hoje(), p=posicao(d), s=sessaoDe(p.semana,p.dia), feito=S.feitos[d];
+  const d=hoje(), p=posicao(d), s=sessaoAtiva(p.semana,p.dia,d), feito=S.feitos[d], trocado=!!S.trocas[d];
   const lv=nivel(S.xp), kg=S.perfil.peso||102;
 
   const box=el(`<div class="stack"></div>`);
@@ -567,15 +673,22 @@ function viewHoje(v){
   </div>`));
 
   if(feito){
-    box.append(el(`<button class="btn done" disabled>✓ Concluída hoje · +${feito.xp} XP</button>`));
+    const bd=el(`<button class="btn done">✓ Concluída hoje · +${feito.xp} XP</button>`);
+    bd.onclick=()=>sheetSessao(p.semana,p.dia);
+    box.append(bd);
   }else{
     const b=el(`<button class="btn">▶ Iniciar aula guiada</button>`);
-    b.onclick=()=>abrirPlayer(p.semana,p.dia);
+    b.onclick=()=>abrirPlayer(p.semana,p.dia,d);
     box.append(b);
+    const linha=el(`<div class="grid2"></div>`);
     const b2=el(`<button class="btn ghost">Registrar sem o player</button>`);
     b2.onclick=()=>sheetConcluir(p.semana,p.dia,d);
-    box.append(b2);
+    const b3=el(`<button class="btn ghost">${trocado?"Voltar ao treino do dia":"Perna pesada: trocar por leve"}</button>`);
+    b3.onclick=()=>{ if(trocado) delete S.trocas[d]; else S.trocas[d]=true; salvar(); render(); };
+    linha.append(b2,b3);
+    box.append(linha);
   }
+  if(trocado) box.append(el(`<div class="callout">Sessão do dia trocada por Recuperação Ativa. A ofensiva conta igual, e o XP acompanha o treino que você realmente fez.</div>`));
 
   // nível
   box.append(el(`
@@ -591,15 +704,20 @@ function viewHoje(v){
   </div>`));
 
   // semana
-  const semanaBox=el(`<div class="card"><div class="pad" style="padding-bottom:8px"><span class="eyebrow">Sua semana</span></div><div class="daylist"></div></div>`);
+  const semanaBox=el(`<div class="card"><div class="pad" style="padding-bottom:8px">
+    <span class="eyebrow">Sua semana</span>
+    <div class="small muted" style="margin-top:4px">Esqueceu de marcar? Toque no círculo do dia para registrar depois.</div>
+    </div><div class="daylist"></div></div>`);
   const dl=semanaBox.querySelector(".daylist");
   for(let i=0;i<7;i++){
     const ds=dataDe(p.semana,i), ss=sessaoDe(p.semana,i), ok=!!S.feitos[ds];
     const r=el(`<div class="dayrow">
       <span class="dn">${DIAS[i]}</span>
       <span class="nm"><b>${esc(ss.nome)}</b><i>${minOf(ss)} min · ${kcalOf(ss,kg)} kcal · ${esc(ss.sub)}</i></span>
-      <span class="tick ${ok?"on":""}"></span></div>`);
+      <button class="tick ${ok?"on":""}" aria-label="${ok?"Ver registro":"Marcar como feito"}"></button></div>`);
     r.onclick=()=>sheetSessao(p.semana,i);
+    r.querySelector(".tick").onclick=(e)=>{ e.stopPropagation();
+      (ok || diffDias(ds,hoje())<0) ? sheetSessao(p.semana,i) : sheetConcluir(p.semana,i,ds); };
     dl.append(r);
   }
   box.append(semanaBox);
@@ -640,8 +758,10 @@ function viewPrograma(v){
           <span class="dn">${DIAS[i]}</span>
           <span class="nm"><b>${esc(ss.nome)}</b><i>${fmtBR(ds)} · ${minOf(ss)} min · ${esc(ss.sub)}</i>
             <span style="display:block;margin-top:6px">${railHTML(ss)}</span></span>
-          <span class="tick ${ok?"on":""}"></span></div>`);
+          <button class="tick ${ok?"on":""}" aria-label="${ok?"Ver registro":"Marcar como feito"}"></button></div>`);
         r.onclick=()=>sheetSessao(sem,i);
+        r.querySelector(".tick").onclick=(e)=>{ e.stopPropagation();
+          (ok || diffDias(ds,hoje())<0) ? sheetSessao(sem,i) : sheetConcluir(sem,i,ds); };
         dl.append(r);
       });
       box.append(det);
@@ -720,6 +840,30 @@ function viewPerfil(v){
   };
   box.append(f);
 
+  const som=el(`<div class="card pad">
+    <span class="eyebrow">Aula guiada</span>
+    <h3 style="font-size:19px;margin:6px 0 10px">Como o treinador fala com você</h3>
+    <label class="row" style="gap:12px;margin-bottom:12px"><input type="checkbox" id="oVoz" style="width:22px;height:22px;flex:none" ${S.opts.voz?"checked":""}>
+      <span><b>Voz do treinador</b><br><span class="small muted">Anuncia cada bloco, avisa a transição e solta uma frase no meio dos blocos longos.</span></span></label>
+    <label class="row" style="gap:12px;margin-bottom:12px"><input type="checkbox" id="oFrases" style="width:22px;height:22px;flex:none" ${S.opts.frases?"checked":""}>
+      <span><b>Frases na tela</b><br><span class="small muted">Troca a cada 25 s durante o bloco.</span></span></label>
+    <label class="row" style="gap:12px;margin-bottom:14px"><input type="checkbox" id="oBipe" style="width:22px;height:22px;flex:none" ${S.opts.bipe?"checked":""}>
+      <span><b>Bipes</b><br><span class="small muted">Contagem nos últimos segundos e tom de virada de bloco.</span></span></label>
+    <button class="btn ghost" id="oTeste">Testar a voz</button>
+  </div>`);
+  som.querySelectorAll("input").forEach(inp=>inp.onchange=()=>{
+    S.opts.voz=document.getElementById("oVoz").checked;
+    S.opts.frases=document.getElementById("oFrases").checked;
+    S.opts.bipe=document.getElementById("oBipe").checked;
+    salvar();
+  });
+  som.querySelector("#oTeste").onclick=()=>{
+    const antes=S.opts.voz; S.opts.voz=true;
+    falar("Prepara. Acelera para cem rotações, resistência seis.");
+    S.opts.voz=antes; beep(920,0.3,0.18);
+  };
+  box.append(som);
+
   box.append(el(`<div class="card pad">
     <span class="eyebrow">Calibração da bike</span>
     <h3 style="font-size:19px;margin:6px 0 8px">Marque as resistências R1–R7</h3>
@@ -774,7 +918,7 @@ window.fecharSheet=fecharSheet;
 document.getElementById("modal").addEventListener("click",e=>{ if(e.target.id==="modal") fecharSheet(); });
 
 function sheetSessao(sem,dia){
-  const s=sessaoDe(sem,dia), kg=S.perfil.peso||102, ds=dataDe(sem,dia);
+  const ds=dataDe(sem,dia), s=sessaoAtiva(sem,dia,ds), kg=S.perfil.peso||102;
   let acc=0;
   abrirSheet(`
     <span class="eyebrow">Semana ${sem} · ${DIAS[dia]} · ${fmtBR(ds)}</span>
@@ -793,30 +937,63 @@ function sheetSessao(sem,dia){
         <td class="mono">${esc(b.rpm)}</td><td class="mono">${esc(b.res)}</td>
         <td><b>${esc(b.pos)}</b><br><span class="muted">${esc(b.cue)}</span></td></tr>`;}).join("")}
     </tbody></table></div>
-    <div class="grid2" style="margin-top:16px">
-      <button class="btn ghost" onclick="fecharSheet()">Fechar</button>
-      <button class="btn" id="goPlay">▶ Iniciar</button>
-    </div>`);
-  document.getElementById("goPlay").onclick=()=>{ fecharSheet(); abrirPlayer(sem,dia); };
+    <div id="acoes" style="margin-top:16px;display:flex;flex-direction:column;gap:10px"></div>`);
+
+  const feito=S.feitos[ds], hj=hoje(), atraso=diffDias(ds,hj);
+  const box=document.getElementById("acoes");
+  const add=(rot,cls,fn)=>{ const b=el(`<button class="btn ${cls}">${rot}</button>`); b.onclick=fn; box.append(b); return b; };
+
+  if(feito){
+    box.append(el(`<div class="card pad" style="background:var(--surface2)">
+      <span class="eyebrow">Registrado</span>
+      <div class="row small" style="gap:14px;margin-top:8px;flex-wrap:wrap">
+        <span>+${feito.xp} XP</span><span>${feito.min} min</span><span>${feito.kcal} kcal</span>
+        ${feito.rpe?`<span>RPE ${feito.rpe}</span>`:""}${feito.fcMed?`<span>FC ${feito.fcMed}</span>`:""}
+      </div>
+      ${feito.obs?`<div class="small muted" style="margin-top:8px">${esc(feito.obs)}</div>`:""}
+    </div>`));
+    add("Editar registro","ghost",()=>sheetConcluir(sem,dia,ds));
+    add("Desfazer registro","ghost",()=>{
+      abrirSheet(`<h3 style="font-size:19px">Desfazer ${esc(s.nome)} de ${fmtBR(ds)}?</h3>
+        <p class="small muted">O XP e a ofensiva são recalculados.</p>
+        <div class="grid2" style="margin-top:14px"><button class="btn ghost" onclick="fecharSheet()">Cancelar</button>
+        <button class="btn" id="okUndo">Desfazer</button></div>`);
+      document.getElementById("okUndo").onclick=()=>{ desfazer(ds); fecharSheet(); render(); };
+    });
+  }else if(atraso>0){
+    add(`✓ Marcar como feito em ${fmtBR(ds)}`,"",()=>sheetConcluir(sem,dia,ds));
+    add("▶ Fazer agora","ghost",()=>{ fecharSheet(); abrirPlayer(sem,dia,hj); });
+  }else if(atraso===0){
+    add("▶ Iniciar aula guiada","",()=>{ fecharSheet(); abrirPlayer(sem,dia,hj); });
+    add("✓ Marcar como feito","ghost",()=>sheetConcluir(sem,dia,ds));
+  }else{
+    box.append(el(`<div class="small muted" style="text-align:center">Sessão de ${fmtBR(ds)}. Dá para adiantar, mas o bônus de 25 XP é só no dia certo.</div>`));
+    add("▶ Fazer agora mesmo assim","ghost",()=>{ fecharSheet(); abrirPlayer(sem,dia,hj); });
+  }
+  add("Fechar","ghost",()=>fecharSheet());
 }
 
 function sheetConcluir(sem,dia,dateStr){
-  const s=sessaoDe(sem,dia), teste = s.key==="teste";
+  const s=sessaoAtiva(sem,dia,dateStr), teste = s.key==="teste";
+  const f=S.feitos[dateStr]||{}, tst=(S.testes||[]).find(t=>t.data===dateStr)||{};
+  const atraso=diffDias(dateStr,hoje());
+  const v=x=>x==null?"":x;
   abrirSheet(`
-    <span class="eyebrow">Registrar</span>
-    <h3 style="font-size:22px;margin:6px 0 12px">${esc(s.nome)}</h3>
+    <span class="eyebrow">${f.nome?"Editar registro":"Registrar"} · ${DIAS[dia]} ${fmtBR(dateStr)}</span>
+    <h3 style="font-size:22px;margin:6px 0 4px">${esc(s.nome)}</h3>
+    <div class="small muted" style="margin-bottom:12px">${minOf(s)} min · ${kcalOf(s,S.perfil.peso||102)} kcal${atraso>0?` · registro retroativo de ${atraso} dia${atraso>1?"s":""} atrás`:""}</div>
     <div class="grid2">
-      <label class="f"><span>RPE (1–10)</span><input id="rRpe" type="number" min="1" max="10" inputmode="numeric"></label>
-      <label class="f"><span>FC média</span><input id="rFcm" type="number" inputmode="numeric"></label>
-      <label class="f"><span>FC máxima</span><input id="rFcx" type="number" inputmode="numeric"></label>
-      ${teste?'<label class="f"><span>FC repouso (manhã)</span><input id="rFcr" type="number" inputmode="numeric"></label>':""}
+      <label class="f"><span>RPE (1–10)</span><input id="rRpe" type="number" min="1" max="10" inputmode="numeric" value="${v(f.rpe)}"></label>
+      <label class="f"><span>FC média</span><input id="rFcm" type="number" inputmode="numeric" value="${v(f.fcMed)}"></label>
+      <label class="f"><span>FC máxima</span><input id="rFcx" type="number" inputmode="numeric" value="${v(f.fcMax)}"></label>
+      ${teste?`<label class="f"><span>FC repouso (manhã)</span><input id="rFcr" type="number" inputmode="numeric" value="${v(tst.fcRep)}"></label>`:""}
     </div>
     ${teste?`<div class="grid2">
-      <label class="f"><span>RPM médio 12 min</span><input id="rRpm" type="number" inputmode="numeric"></label>
-      <label class="f"><span>Queda de FC em 60 s</span><input id="rHrr" type="number" inputmode="numeric"></label>
+      <label class="f"><span>RPM médio 12 min</span><input id="rRpm" type="number" inputmode="numeric" value="${v(tst.rpm)}"></label>
+      <label class="f"><span>Queda de FC em 60 s</span><input id="rHrr" type="number" inputmode="numeric" value="${v(tst.hrr60)}"></label>
     </div>`:""}
-    <label class="f"><span>Observações</span><textarea id="rObs" placeholder="Como foi, pernas, sono, o que ajustar"></textarea></label>
-    <button class="btn" id="rOk">Concluir e ganhar XP</button>`);
+    <label class="f"><span>Observações</span><textarea id="rObs" placeholder="Como foi, pernas, sono, o que ajustar">${esc(f.obs||"")}</textarea></label>
+    <button class="btn" id="rOk">${f.nome?"Salvar alterações":"Concluir e ganhar XP"}</button>`);
   document.getElementById("rOk").onclick=()=>{
     const g=id=>{const e=document.getElementById(id); return e? e.value.trim():"";};
     const r=concluir(dateStr,sem,dia,{rpe:g("rRpe"),fcMed:g("rFcm"),fcMax:g("rFcx"),
@@ -826,10 +1003,12 @@ function sheetConcluir(sem,dia,dateStr){
 }
 
 function celebrar(r){
+  const atras = r.data && r.data!==hoje();
   abrirSheet(`
     <div class="celebrate">
       <div class="big pulse">+${r.xp} XP</div>
       <div style="margin-top:4px">${esc(r.nome)} · ${r.min} min · ${r.kcal} kcal</div>
+      ${atras?`<div class="small muted" style="margin-top:4px">Registrado em ${fmtBR(r.data)}</div>`:""}
       <div class="row" style="justify-content:center;gap:16px;margin-top:14px">
         <span class="chip flame">🔥 ${S.ofensiva} ${S.ofensiva===1?"dia":"dias"}</span>
         <span class="chip">Nível ${nivel(S.xp).n} · ${nivel(S.xp).nome}</span>
@@ -842,9 +1021,26 @@ function celebrar(r){
 }
 
 /* ================= PLAYER ================= */
-let P={sem:0,dia:0,s:null,i:0,left:0,rodando:false,t:null,restante:0,lock:null,ctx:null};
+let P={sem:0,dia:0,ds:null,s:null,i:0,left:0,rodando:false,t:null,restante:0,total:0,lock:null,ctx:null,
+       avisou:false,ultMot:0,motIdx:0,falouMeio:false};
 
+function falar(txt){
+  if(!S.opts.voz || !txt) return;
+  try{
+    const u=new SpeechSynthesisUtterance(txt);
+    u.lang="pt-BR"; u.rate=1.06; u.pitch=1;
+    const v=(speechSynthesis.getVoices()||[]).find(x=>/pt[-_]?BR/i.test(x.lang))||null;
+    if(v) u.voice=v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+function frase(b){
+  const pool = FRASES[b.tag] || FRASES.Bloco;
+  P.motIdx = (P.motIdx+1) % pool.length;
+  return pool[P.motIdx];
+}
 function beep(freq,dur,vol){
+  if(!S.opts.bipe) return;
   try{
     if(!P.ctx) P.ctx=new (window.AudioContext||window.webkitAudioContext)();
     const o=P.ctx.createOscillator(), g=P.ctx.createGain();
@@ -855,9 +1051,13 @@ function beep(freq,dur,vol){
   }catch(e){}
 }
 
-async function abrirPlayer(sem,dia){
-  P.sem=sem; P.dia=dia; P.s=sessaoDe(sem,dia); P.i=0; P.left=P.s.blocos[0].s; P.restante=secOf(P.s); P.rodando=true;
+async function abrirPlayer(sem,dia,ds){
+  P.sem=sem; P.dia=dia; P.ds=ds||hoje(); P.s=sessaoAtiva(sem,dia,P.ds);
+  P.i=0; P.left=P.s.blocos[0].s; P.total=secOf(P.s); P.restante=P.total; P.rodando=true;
+  P.avisou=false; P.ultMot=0; P.motIdx=-1; P.falouMeio=false;
   document.getElementById("pName").textContent=P.s.nome;
+  document.getElementById("pDur").textContent=mmss(P.total);
+  document.getElementById("pPrep").classList.remove("on");
   const rail=document.getElementById("pRail"); rail.innerHTML="";
   const tot=secOf(P.s);
   P.s.blocos.forEach(b=>{ const d=document.createElement("div");
@@ -866,10 +1066,27 @@ async function abrirPlayer(sem,dia){
   document.getElementById("pPlay").textContent="Pausar";
   try{ if(navigator.wakeLock) P.lock=await navigator.wakeLock.request("screen"); }catch(e){}
   try{ if(!P.ctx) P.ctx=new (window.AudioContext||window.webkitAudioContext)(); if(P.ctx.state==="suspended") P.ctx.resume(); }catch(e){}
-  pintar(); relogio();
+  try{ if(S.opts.voz && window.speechSynthesis) speechSynthesis.getVoices(); }catch(e){}
+  pintar(); anunciar(P.s.blocos[0]); relogio();
+}
+function anunciar(b){
+  const rpm=num1(b.rpm), res=num1(b.res);
+  let t=b.cue;
+  if(rpm) t+=`. ${rpm} rotações`;
+  if(res) t+=`, resistência ${res}`;
+  falar(t);
+}
+function mostrarFrase(b,forcar){
+  if(!S.opts.frases) return;
+  const m=document.getElementById("pMot");
+  const nova=frase(b);
+  m.style.opacity="0";
+  setTimeout(()=>{ m.textContent=nova; m.style.opacity="1"; },180);
+  if(forcar) falar(nova);
 }
 function fecharPlayer(){
   P.rodando=false; clearInterval(P.t); P.t=null;
+  document.getElementById("pPrep").classList.remove("on");
   document.getElementById("player").classList.remove("on");
   try{ if(P.lock) P.lock.release(); }catch(e){} P.lock=null;
 }
@@ -883,12 +1100,36 @@ function pintar(){
   document.getElementById("pRes").textContent=b.res;
   const alvo=fcAlvo(b.z);
   document.getElementById("pZone").textContent=alvo?alvo:z.n;
-  document.getElementById("pTotal").textContent=mmss(P.restante)+" restantes";
+  document.getElementById("pBlockBar").parentElement.style.color=zc(b.z);
   const prox=P.s.blocos[P.i+1];
-  document.getElementById("pNext").textContent = prox? `Depois: ${prox.pos} · ${prox.rpm} rpm · ${prox.res} · ${Math.max(1,Math.round(prox.s/60))} min` : "Último bloco — fecha forte";
+  document.getElementById("pNext").textContent = prox? `Depois: ${prox.pos} · ${prox.rpm} rpm · ${prox.res} · ${prox.s>=60?Math.round(prox.s/60)+" min":prox.s+" s"}` : "Último bloco — fecha forte";
   document.querySelector("#player .pglow").style.background=`radial-gradient(70% 50% at 50% 42%, ${zc(b.z)} 0%, transparent 70%)`;
   const ds=document.querySelectorAll("#pRail div");
   ds.forEach((d,i)=>{ d.classList.toggle("done",i<P.i); d.classList.toggle("now",i===P.i); });
+  mostrarFrase(b,false); P.ultMot=P.total-P.restante;
+  tempos();
+}
+function tempos(){
+  const dec=Math.max(0,P.total-P.restante);
+  document.getElementById("pElapsed").textContent=mmss(Math.floor(dec));
+  document.getElementById("pProg").style.width=(dec/P.total*100).toFixed(2)+"%";
+  const b=P.s.blocos[P.i];
+  document.getElementById("pBlockBar").style.width=(Math.max(0,(b.s-P.left))/b.s*100).toFixed(2)+"%";
+}
+function prepararTransicao(seg){
+  const b=P.s.blocos[P.i], prox=P.s.blocos[P.i+1];
+  const box=document.getElementById("pPrep");
+  if(!prox){ box.classList.remove("on"); return; }
+  if(!P.avisou){
+    P.avisou=true;
+    const instr=instrucaoTransicao(b,prox);
+    document.getElementById("pPrepInstr").textContent=instr;
+    document.getElementById("pPrepDet").textContent=`${prox.rpm} rpm · ${prox.res} · ${prox.pos}`;
+    box.style.color=zc(prox.z);
+    box.classList.add("on");
+    falar(`Prepara. ${instr.toLowerCase().replace(/\+/g," e ")}.`);
+  }
+  document.getElementById("pPrepNum").textContent=Math.max(0,seg);
 }
 function relogio(){
   clearInterval(P.t);
@@ -896,28 +1137,46 @@ function relogio(){
   P.t=setInterval(()=>{
     if(!P.rodando){ ultimo=Date.now(); return; }
     const agora=Date.now(), dt=(agora-ultimo)/1000; ultimo=agora;
+    const b=P.s.blocos[P.i];
     const antes=Math.ceil(P.left);
     P.left-=dt; P.restante=Math.max(0,P.restante-dt);
     const depois=Math.ceil(P.left);
-    if(antes>depois && depois<=3 && depois>0) beep(660,0.08,0.12);
+
+    // aviso de transição
+    const janela = b.s>=90 ? 10 : (b.s>=40 ? 5 : 3);
+    if(depois<=janela && depois>0 && P.s.blocos[P.i+1]) prepararTransicao(depois);
+    if(antes>depois && depois<=5 && depois>0) beep(660,0.08,0.12);
+
+    // frase no meio de blocos longos
+    if(b.s>=150 && !P.falouMeio && (b.s-P.left)>=b.s/2){ P.falouMeio=true; mostrarFrase(b,true); }
+    const dec=P.total-P.restante;
+    if(S.opts.frases && b.s>=120 && dec-P.ultMot>=25){ P.ultMot=dec; mostrarFrase(b,false); }
+
     if(P.left<=0){ avancar(true); return; }
     document.getElementById("pTime").textContent=mmss(Math.ceil(P.left));
-    document.getElementById("pTotal").textContent=mmss(Math.ceil(P.restante))+" restantes";
+    tempos();
   },200);
 }
 function avancar(auto){
   if(P.i>=P.s.blocos.length-1){ terminar(); return; }
   if(!auto) P.restante=Math.max(0,P.restante-P.left);
   P.i++; P.left=P.s.blocos[P.i].s;
-  const z=P.s.blocos[P.i].z;
-  beep(z>=4?920:480, z>=4?0.30:0.18, 0.18);
-  pintar();
+  P.avisou=false; P.falouMeio=false;
+  document.getElementById("pPrep").classList.remove("on");
+  const b=P.s.blocos[P.i];
+  beep(b.z>=4?920:480, b.z>=4?0.30:0.18, 0.18);
+  pintar(); anunciar(b);
 }
 function terminar(){
+  falar("Acabou. Bom treino.");
   fecharPlayer();
-  sheetConcluir(P.sem,P.dia,hoje());
+  sheetConcluir(P.sem,P.dia,P.ds||hoje());
 }
-document.getElementById("pPlay").onclick=()=>{ P.rodando=!P.rodando; document.getElementById("pPlay").textContent=P.rodando?"Pausar":"Continuar"; };
+document.getElementById("pPlay").onclick=()=>{
+  P.rodando=!P.rodando;
+  document.getElementById("pPlay").textContent=P.rodando?"Pausar":"Continuar";
+  try{ if(!P.rodando) speechSynthesis.cancel(); }catch(e){}
+};
 document.getElementById("pSkip").onclick=()=>avancar(false);
 document.getElementById("pQuit").onclick=()=>{
   abrirSheet(`<h3 style="font-size:19px">Encerrar a aula?</h3><p class="small muted">Você pode registrar do mesmo jeito, com o que já fez.</p>
@@ -928,7 +1187,19 @@ document.getElementById("pQuit").onclick=()=>{
 
 /* ================= BOOT ================= */
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ aba=b.dataset.tab; render(); });
-(async ()=>{ await carregar(); render(); })();
+function migrar(){
+  let mudou=false;
+  Object.keys(S.feitos).forEach(d=>{
+    const f=S.feitos[d];
+    if(f.hard==null){
+      try{ f.hard=Math.round(hardMin(sessaoAtiva(f.sem,f.dia,d))); }catch(e){ f.hard=0; }
+      mudou=true;
+    }
+  });
+  recalcTudo();
+  if(mudou) salvar();
+}
+(async ()=>{ await carregar(); migrar(); render(); })();
 </script>
 
 <script>
